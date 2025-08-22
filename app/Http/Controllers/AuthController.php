@@ -7,9 +7,44 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Session;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
+    // Redirect to Google
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    // Handle callback from Google
+    public function handleGoogleCallback()
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+
+        // Check if user already exists
+        $user = User::where('email', $googleUser->getEmail())->first();
+
+        if (!$user) {
+            // New user -> create
+            $user = User::create([
+                'first_name' => $googleUser->user['given_name'] ?? $googleUser->name, // fallback to full name
+                'surname' => $googleUser->user['family_name'] ?? '', // fallback empty if unavailable
+                'email' => $googleUser->getEmail(),
+                'role'  => 'applicant', // default role
+                'password' => bcrypt(str()->random(16)), // dummy password
+            ]);
+        }
+
+        Auth::login($user);
+
+        // Redirect based on role
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('student.dashboard');
+    }
+
     public function showLoginForm()
     {
         return view('auth.login');

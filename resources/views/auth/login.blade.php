@@ -38,7 +38,12 @@
                             </button>
                         </div>
                     </form>
-                    
+                    <hr>
+                        <div class="d-grid mt-3">
+                            <a href="{{ route('google.login') }}" class="btn btn-danger">
+                                <i class="fab fa-google me-2"></i> Login with Google
+                            </a>
+                        </div>
                     <hr>
                     <div class="text-center">
                         <p class="mb-0">Don't have an account? <a href="{{ route('register') }}">Register here</a></p>
